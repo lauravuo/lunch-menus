@@ -3,104 +3,127 @@ Kahvila Epilä lunch menu scraper.
 Website: https://www.kahvilaepila.com/lounaslista/
 """
 
-from typing import Dict, List
-from bs4 import BeautifulSoup
 import re
+from typing import Dict, List
 from .base import BaseRestaurant
 
 
 class KahvilaEpila(BaseRestaurant):
-    """Scraper for Kahvila Epilä restaurant."""
-    
     def __init__(self):
         super().__init__(
-            name="Kahvila Epilä",
-            url="https://www.kahvilaepila.com/lounaslista/"
+            name="Kahvila Epilä", url="https://www.kahvilaepila.com/lounaslista/"
         )
-    
+
+    def _extract_menu_from_structure(self, soup) -> Dict[str, List[str]]:
+        """Extract menu using structured HTML elements."""
+        menu = {}
+        day_headers = soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"])
+
+        for header in day_headers:
+            day_text = header.get_text(strip=True)
+            if self._is_day_header(day_text):
+                day_name = self._normalize_day_name(day_text)
+                items = self._get_items_for_day(header)
+                if items:
+                    menu[day_name] = items
+
+        return menu
+
+    def _is_day_header(self, text: str) -> bool:
+        """Check if text represents a day header."""
+        day_patterns = [
+            r"maanantai",
+            r"tiistai",
+            r"keskiviikko",
+            r"torstai",
+            r"perjantai",
+            r"monday",
+            r"tuesday",
+            r"wednesday",
+            r"thursday",
+            r"friday",
+        ]
+        text_lower = text.lower()
+        return any(re.search(pattern, text_lower) for pattern in day_patterns)
+
+    def _normalize_day_name(self, text: str) -> str:
+        """Normalize day names to Finnish."""
+        day_mapping = {
+            "maanantai": "Maanantai",
+            "monday": "Maanantai",
+            "tiistai": "Tiistai",
+            "tuesday": "Tiistai",
+            "keskiviikko": "Keskiviikko",
+            "wednesday": "Keskiviikko",
+            "torstai": "Torstai",
+            "thursday": "Torstai",
+            "perjantai": "Perjantai",
+            "friday": "Perjantai",
+        }
+        text_lower = text.lower()
+        for pattern, normalized in day_mapping.items():
+            if pattern in text_lower:
+                return normalized
+        return text
+
+    def _get_items_for_day(self, header) -> List[str]:
+        """Extract menu items for a specific day."""
+        items = []
+        current = header.find_next_sibling()
+
+        while current and not self._is_next_day_header(current):
+            if current.name in ["p", "li", "div"]:
+                text = current.get_text(strip=True)
+                if text and len(text) > 3:
+                    items.append(text)
+            current = current.find_next_sibling()
+
+        return items
+
+    def _is_next_day_header(self, element) -> bool:
+        """Check if element is a day header."""
+        if element.name in ["h1", "h2", "h3", "h4", "h5", "h6"]:
+            return self._is_day_header(element.get_text(strip=True))
+        return False
+
+    def _extract_menu_with_regex(self, soup) -> Dict[str, List[str]]:
+        """Fallback: Extract menu using regex patterns."""
+        menu = {}
+        text = soup.get_text()
+
+        # Look for day patterns followed by menu items
+        day_patterns = [
+            (
+                r"maanantai[:\s]*(.*?)(?=tiistai|keskiviikko|torstai|perjantai|$)",
+                "Maanantai",
+            ),
+            (r"tiistai[:\s]*(.*?)(?=keskiviikko|torstai|perjantai|$)", "Tiistai"),
+            (r"keskiviikko[:\s]*(.*?)(?=torstai|perjantai|$)", "Keskiviikko"),
+            (r"torstai[:\s]*(.*?)(?=perjantai|$)", "Torstai"),
+            (r"perjantai[:\s]*(.*?)$", "Perjantai"),
+        ]
+
+        for pattern, day_name in day_patterns:
+            match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+            if match:
+                content = match.group(1).strip()
+                items = [item.strip() for item in content.split("\n") if item.strip()]
+                if items:
+                    menu[day_name] = items
+
+        return menu
+
     def scrape_menu(self) -> Dict[str, List[str]]:
-        """Scrape the lunch menu from Kahvila Epilä website."""
+        """Scrape the lunch menu from Kahvila Epilä."""
         soup = self.get_page_content()
         if not soup:
             return {}
-        
-        menu_data = {}
-        
-        try:
-            # Find the main content area
-            content = soup.find('div', class_='entry-content') or soup.find('main') or soup
-            
-            # Look for week information
-            week_header = content.find('h2')
-            if week_header and 'viikko' in week_header.get_text().lower():
-                # Find all day sections
-                day_sections = content.find_all(['h3', 'h4', 'strong'])
-                
-                current_day = None
-                current_items = []
-                
-                for element in day_sections:
-                    text = element.get_text().strip()
-                    
-                    # Check if this is a day header
-                    if any(day in text.lower() for day in ['maanantai', 'tiistai', 'keskiviikko', 'torstai', 'perjantai']):
-                        # Save previous day's data
-                        if current_day and current_items:
-                            menu_data[current_day] = current_items
-                        
-                        # Start new day
-                        current_day = text
-                        current_items = []
-                        
-                        # Look for menu items in the next sibling elements
-                        next_elem = element.find_next_sibling()
-                        while next_elem and next_elem.name not in ['h3', 'h4', 'strong']:
-                            if next_elem.name == 'ul':
-                                # Found a list of menu items
-                                items = next_elem.find_all('li')
-                                for item in items:
-                                    item_text = item.get_text().strip()
-                                    if item_text:
-                                        current_items.append(item_text)
-                                break
-                            elif next_elem.name == 'p':
-                                # Check if paragraph contains menu items
-                                p_text = next_elem.get_text().strip()
-                                if p_text and not p_text.startswith('Lounas') and not p_text.startswith('Keitto'):
-                                    current_items.append(p_text)
-                            
-                            next_elem = next_elem.find_next_sibling()
-                
-                # Save the last day's data
-                if current_day and current_items:
-                    menu_data[current_day] = current_items
-            
-            # If the above method didn't work, try alternative approach
-            if not menu_data:
-                # Look for any text that might contain menu information
-                all_text = content.get_text()
-                
-                # Try to find menu items using regex patterns
-                day_patterns = [
-                    r'(maanantai[:\s]*)(.*?)(?=tiistai|keskiviikko|torstai|perjantai|$)',
-                    r'(tiistai[:\s]*)(.*?)(?=keskiviikko|torstai|perjantai|$)',
-                    r'(keskiviikko[:\s]*)(.*?)(?=torstai|perjantai|$)',
-                    r'(torstai[:\s]*)(.*?)(?=perjantai|$)',
-                    r'(perjantai[:\s]*)(.*?)(?=$)'
-                ]
-                
-                for pattern in day_patterns:
-                    match = re.search(pattern, all_text, re.IGNORECASE | re.DOTALL)
-                    if match:
-                        day_name = match.group(1).strip().rstrip(':')
-                        menu_text = match.group(2).strip()
-                        
-                        # Split menu text into items
-                        items = [item.strip() for item in menu_text.split('\n') if item.strip()]
-                        if items:
-                            menu_data[day_name] = items
-            
-        except Exception as e:
-            print(f"Error scraping Kahvila Epilä menu: {e}")
-        
-        return menu_data
+
+        # Try structured approach first
+        menu = self._extract_menu_from_structure(soup)
+
+        # Fallback to regex if structured approach didn't work
+        if not menu:
+            menu = self._extract_menu_with_regex(soup)
+
+        return menu
