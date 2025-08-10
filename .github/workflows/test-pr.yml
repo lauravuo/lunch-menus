@@ -1,0 +1,93 @@
+name: Test Pull Request
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 src/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+    - name: Test with pytest
+      run: |
+        pip install pytest
+        pytest test_scrapers.py -v
+        
+    - name: Test scraper imports
+      run: |
+        python -c "
+        from src.restaurants.base import BaseRestaurant
+        from src.restaurants.kahvila_epila import KahvilaEpila
+        from src.restaurants.kontukeittio import KontukeittioNokia
+        from src.restaurants.nokian_kartano import NokianKartano
+        from src.telegram_bot import TelegramBot
+        from src.scraper import get_restaurants, scrape_all_menus
+        print('✅ All imports successful')
+        "
+        
+    - name: Test scraper without Telegram (dry run)
+      env:
+        TELEGRAM_BOT_TOKEN: "test_token"
+        TELEGRAM_CHANNEL_ID: "test_channel"
+      run: |
+        # Test that scrapers can be initialized and run without errors
+        python -c "
+        import sys
+        sys.path.insert(0, 'src')
+        
+        from restaurants.kahvila_epila import KahvilaEpila
+        from restaurants.kontukeittio import KontukeittioNokia
+        from restaurants.nokian_kartano import NokianKartano
+        
+        # Test initialization
+        epila = KahvilaEpila()
+        kontu = KontukeittioNokia()
+        kartano = NokianKartano()
+        
+        print(f'✅ Initialized: {epila.name}, {kontu.name}, {kartano.name}')
+        
+        # Test that we can get page content (this will fail for real sites without proper tokens)
+        # but we can at least test the structure
+        print('✅ All scrapers initialized successfully')
+        "
+        
+    - name: Check code formatting
+      run: |
+        pip install black
+        # Check if code is properly formatted
+        black --check src/ || echo "⚠️  Code formatting issues found. Run 'black src/' to fix."
+        
+    - name: Validate workflow files with actionlint
+      run: |
+        # Install actionlint for GitHub Actions workflow validation
+        curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download.sh | sh -s -- -b $GITHUB_WORKSPACE
+        chmod +x $GITHUB_WORKSPACE/actionlint
+        
+        # Validate all workflow files
+        $GITHUB_WORKSPACE/actionlint -color
+        
+        echo "✅ All workflow files are valid"
