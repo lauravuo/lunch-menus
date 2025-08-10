@@ -1,9 +1,9 @@
 """
 Kontukeittiö Nokia lunch menu scraper.
-Website: https://kontukoti.fi/kontukeittio/kontukeittio-nokia/
+API: https://europe-west1-luncher-7cf76.cloudfunctions.net/api/v1/week/1baa89be-11dc-4447-abb3-bbaef16cc6d1/active?language=fi
 """
 
-import re
+import json
 from typing import Dict, List
 from .base import BaseRestaurant
 
@@ -12,93 +12,86 @@ class KontukeittioNokia(BaseRestaurant):
     def __init__(self):
         super().__init__(
             name="Kontukeittiö Nokia",
-            url="https://kontukoti.fi/kontukeittio/kontukeittio-nokia/",
+            url="https://europe-west1-luncher-7cf76.cloudfunctions.net/api/v1/week/1baa89be-11dc-4447-abb3-bbaef16cc6d1/active?language=fi",
         )
 
-    def _extract_menu_with_regex(self, soup) -> Dict[str, List[str]]:
-        """Extract menu using regex patterns."""
-        menu = {}
-        text = soup.get_text()
-
-        # Look for day patterns followed by menu items
-        day_patterns = [
-            (
-                r"maanantai[:\s]*(.*?)(?=tiistai|keskiviikko|torstai|perjantai|$)",
-                "Maanantai",
-            ),
-            (r"tiistai[:\s]*(.*?)(?=keskiviikko|torstai|perjantai|$)", "Tiistai"),
-            (r"keskiviikko[:\s]*(.*?)(?=torstai|perjantai|$)", "Keskiviikko"),
-            (r"torstai[:\s]*(.*?)(?=perjantai|$)", "Torstai"),
-            (r"perjantai[:\s]*(.*?)$", "Perjantai"),
-        ]
-
-        for pattern, day_name in day_patterns:
-            match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
-            if match:
-                content = match.group(1).strip()
-                items = [item.strip() for item in content.split("\n") if item.strip()]
-                if items:
-                    menu[day_name] = items
-
-        return menu
-
-    def _extract_menu_from_content(self, soup) -> Dict[str, List[str]]:
-        """Extract menu from general content areas."""
-        menu = {}
-        content_areas = soup.find_all(
-            ["div", "section"], class_=re.compile(r"content|main|entry")
-        )
-
-        for area in content_areas:
-            text = area.get_text()
-            if self._contains_menu_keywords(text):
-                # Try to extract structured menu items
-                items = self._extract_menu_items(area)
-                if items:
-                    # Assign to a generic day if we can't determine specific days
-                    menu["Lounas"] = items
-                    break
-
-        return menu
-
-    def _contains_menu_keywords(self, text: str) -> bool:
-        """Check if text contains menu-related keywords."""
-        keywords = ["lounas", "keitto", "pääruoka", "ruoka", "menu", "soup", "main"]
-        text_lower = text.lower()
-        return any(keyword in text_lower for keyword in keywords)
-
-    def _extract_menu_items(self, element) -> List[str]:
-        """Extract menu items from an HTML element."""
-        items = []
-
-        # Look for list items
-        list_items = element.find_all("li")
-        for item in list_items:
-            text = item.get_text(strip=True)
-            if text and len(text) > 3:
-                items.append(text)
-
-        # Look for paragraphs
-        if not items:
-            paragraphs = element.find_all("p")
-            for p in paragraphs:
-                text = p.get_text(strip=True)
-                if text and len(text) > 3 and not text.startswith("©"):
-                    items.append(text)
-
-        return items
+    def get_page_content(self):
+        """Override to fetch JSON instead of HTML."""
+        try:
+            response = self.session.get(self.url, timeout=10)
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            from .base import logging
+            logging.error(f"Failed to fetch {self.name} JSON: {e}")
+            return None
 
     def scrape_menu(self) -> Dict[str, List[str]]:
-        """Scrape the lunch menu from Kontukeittiö Nokia."""
-        soup = self.get_page_content()
-        if not soup:
+        """Scrape the lunch menu from Kontukeittiö Nokia JSON API."""
+        json_data = self.get_page_content()
+        if not json_data:
             return {}
 
-        # Try regex approach first
-        menu = self._extract_menu_with_regex(soup)
-
-        # Fallback to content extraction if regex didn't work
-        if not menu:
-            menu = self._extract_menu_from_content(soup)
-
-        return menu
+        try:
+            # Extract menu data from JSON structure
+            if json_data.get("success") and json_data.get("data", {}).get("week", {}).get("days"):
+                days = json_data["data"]["week"]["days"]
+                menu = {}
+                
+                for day in days:
+                    # Skip hidden or closed days
+                    if day.get("isHidden") or day.get("isClosed"):
+                        continue
+                    
+                    day_name = day.get("dayName", {}).get("fi", "")
+                    if not day_name:
+                        continue
+                    
+                    # Convert Finnish day names to our standard format
+                    day_mapping = {
+                        "Maanantai": "Maanantai",
+                        "Tiistai": "Tiistai", 
+                        "Keskiviikko": "Keskiviikko",
+                        "Torstai": "Torstai",
+                        "Perjantai": "Perjantai"
+                    }
+                    
+                    if day_name in day_mapping:
+                        standard_day = day_mapping[day_name]
+                        lunches = day.get("lunches", [])
+                        
+                        if lunches:
+                            menu_items = []
+                            for lunch in lunches:
+                                title = lunch.get("title", {}).get("fi", "")
+                                if title:
+                                    # Build menu item with allergens
+                                    allergens = lunch.get("allergens", [])
+                                    allergen_codes = []
+                                    
+                                    for allergen in allergens:
+                                        code = allergen.get("abbreviation", {}).get("fi", "")
+                                        if code:
+                                            allergen_codes.append(code)
+                                    
+                                    # Format: "Menu Item (L, G)" or just "Menu Item"
+                                    if allergen_codes:
+                                        menu_item = f"{title} ({', '.join(allergen_codes)})"
+                                    else:
+                                        menu_item = title
+                                    
+                                    menu_items.append(menu_item)
+                            
+                            if menu_items:
+                                menu[standard_day] = menu_items
+                
+                return menu
+            else:
+                from .base import logging
+                logging.error(f"Invalid JSON structure from {self.name}")
+                return {}
+                
+        except Exception as e:
+            from .base import logging
+            logging.error(f"Error parsing {self.name} JSON: {e}")
+            return {}

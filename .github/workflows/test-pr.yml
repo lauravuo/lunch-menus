@@ -37,6 +37,10 @@ jobs:
         pip install pytest
         pytest test_scrapers.py -v
         
+    - name: Test current day menu functionality
+      run: |
+        python test_current_day.py
+        
     - name: Test scraper imports
       run: |
         python -c "
@@ -87,10 +91,11 @@ jobs:
     - name: Validate workflow files with actionlint
       run: |
         # Install actionlint for GitHub Actions workflow validation
-        curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download.sh | sh -s -- -b $GITHUB_WORKSPACE
-        chmod +x $GITHUB_WORKSPACE/actionlint
+        curl -sSfL -o actionlint.tar.gz https://github.com/rhysd/actionlint/releases/latest/download/actionlint_1.6.26_linux_amd64.tar.gz
+        tar -xzf actionlint.tar.gz
+        chmod +x actionlint
         
         # Validate all workflow files
-        $GITHUB_WORKSPACE/actionlint -color
+        ./actionlint -color
         
         echo "✅ All workflow files are valid"

@@ -34,7 +34,7 @@ def scrape_all_menus(restaurants) -> List[str]:
     for restaurant in restaurants:
         try:
             logging.info(f"Scraping menu from {restaurant.name}")
-            formatted_menu = restaurant.get_formatted_menu()
+            formatted_menu = restaurant.get_current_day_menu()
             formatted_menus.append(formatted_menu)
             logging.info(f"Successfully scraped {restaurant.name}")
         except Exception as e:
@@ -69,12 +69,12 @@ def main():
 
         # Post to Telegram
         telegram_bot = TelegramBot()
-        success = telegram_bot.post_lunch_menus_sync(formatted_menus)
+        success = telegram_bot.post_current_day_menus_sync(formatted_menus)
 
         if success:
-            logging.info("Successfully posted all menus to Telegram")
+            logging.info("Successfully posted all current day menus to Telegram")
         else:
-            logging.error("Failed to post some menus to Telegram")
+            logging.error("Failed to post some current day menus to Telegram")
 
         return success
 

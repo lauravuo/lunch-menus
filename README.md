@@ -62,6 +62,9 @@ The scraper runs automatically via GitHub Actions every weekday at 7:30 AM UTC (
 # Run the test suite
 python test_scrapers.py
 
+# Test current day menu functionality
+python test_current_day.py
+
 # Run with pytest (if installed)
 pytest test_scrapers.py -v
 
@@ -91,6 +94,8 @@ curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/downl
 │   │   └── nokian_kartano.py    # Nokian Kartano scraper
 │   └── telegram_bot.py          # Telegram posting logic
 ├── requirements.txt              # Python dependencies
+├── test_scrapers.py             # Restaurant scraper tests
+├── test_current_day.py          # Current day menu functionality test
 ├── .gitignore                   # Git ignore file
 └── README.md                    # This file
 ```
@@ -99,8 +104,8 @@ curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/downl
 
 1. **Scheduled Execution**: GitHub Actions runs the scraper daily at 7:30 AM UTC (10:30 AM Finnish time)
 2. **Menu Scraping**: Each restaurant's website is scraped for current lunch menus
-3. **Data Processing**: Menu data is cleaned and formatted
-4. **Telegram Posting**: Formatted menus are posted to the configured Telegram channel
+3. **Data Processing**: Menu data is cleaned and formatted for the current day (or Monday if weekend)
+4. **Telegram Posting**: Current day's formatted menu is posted to the configured Telegram channel
 5. **Error Handling**: Failed scrapes are logged and reported
 
 ## CI/CD

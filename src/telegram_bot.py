@@ -47,8 +47,8 @@ class TelegramBot:
 
         return loop.run_until_complete(self.post_message(message))
 
-    async def post_lunch_menus(self, menus: List[str]) -> bool:
-        """Post multiple lunch menus with a delay between them."""
+    async def post_current_day_menus(self, menus: List[str]) -> bool:
+        """Post current day's lunch menus with a delay between them."""
         if not menus:
             logging.warning("No menus to post")
             return True
@@ -62,11 +62,11 @@ class TelegramBot:
             if i < len(menus) - 1:
                 await asyncio.sleep(1)
 
-        logging.info(f"Posted {success_count}/{len(menus)} menus successfully")
+        logging.info(f"Posted {success_count}/{len(menus)} current day menus successfully")
         return success_count == len(menus)
 
-    def post_lunch_menus_sync(self, menus: List[str]) -> bool:
-        """Synchronous wrapper for post_lunch_menus."""
+    def post_current_day_menus_sync(self, menus: List[str]) -> bool:
+        """Synchronous wrapper for post_current_day_menus."""
         try:
             loop = asyncio.get_event_loop()
         except RuntimeError:

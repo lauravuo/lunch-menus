@@ -26,7 +26,7 @@ def test_kahvila_epila():
     # Test that we can get page content (this will fail for real sites without proper tokens)
     # but we can at least test the structure
     print(f"✅ Initialized: {restaurant.name}")
-
+    print(f"{restaurant.get_formatted_menu()}")
 
 def test_kontukeittio_nokia():
     """Test Kontukeittiö Nokia scraper."""

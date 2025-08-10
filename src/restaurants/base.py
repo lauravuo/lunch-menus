@@ -8,6 +8,8 @@ from typing import Dict, List, Optional
 import requests
 from bs4 import BeautifulSoup
 import logging
+from datetime import datetime
+import locale
 
 
 class BaseRestaurant(ABC):
@@ -37,6 +39,34 @@ class BaseRestaurant(ABC):
     def scrape_menu(self) -> Dict[str, List[str]]:
         """Scrape the lunch menu from the restaurant's website."""
         pass
+
+    def get_current_day_menu(self) -> str:
+        """Get only the current day's menu, or Monday's if it's the weekend."""
+        menu = self.scrape_menu()
+        if not menu:
+            return f"❌ {self.name}: Unable to fetch menu"
+
+        # Get current day name in Finnish
+        current_date = datetime.now()
+        weekday = current_date.weekday()  # 0=Monday, 6=Sunday
+        
+        # If it's weekend (Saturday=5, Sunday=6), use Monday
+        if weekday >= 5:  # Saturday or Sunday
+            target_day = "Maanantai"
+        else:
+            # Map weekday to Finnish day names
+            day_names = ["Maanantai", "Tiistai", "Keskiviikko", "Torstai", "Perjantai"]
+            target_day = day_names[weekday]
+
+        # Get the menu for the target day
+        if target_day in menu and menu[target_day]:
+            formatted = f"🍽️ **{self.name}**\n"
+            formatted += f"📅 **{target_day}**\n"
+            for item in menu[target_day]:
+                formatted += f"• {item}\n"
+            return formatted
+        else:
+            return f"❌ {self.name}: No menu available for {target_day}"
 
     def get_formatted_menu(self) -> str:
         """Get a formatted string representation of the lunch menu."""

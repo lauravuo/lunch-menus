@@ -96,6 +96,7 @@ This guide will help you deploy the Lunch Menu Scraper to GitHub and set up auto
 
 1. **Check Schedule:**
    - The workflow runs every weekday at 7:30 AM UTC (10:30 AM Finnish time)
+   - Posts only the current day's menu (or Monday's menu if it's the weekend)
    - You can modify the schedule in `.github/workflows/daily-scrape.yml`
 
 2. **Monitor Execution:**
