@@ -40,12 +40,15 @@ jobs:
     - name: Test scraper imports
       run: |
         python -c "
-        from src.restaurants.base import BaseRestaurant
-        from src.restaurants.kahvila_epila import KahvilaEpila
-        from src.restaurants.kontukeittio import KontukeittioNokia
-        from src.restaurants.nokian_kartano import NokianKartano
-        from src.telegram_bot import TelegramBot
-        from src.scraper import get_restaurants, scrape_all_menus
+        import sys
+        sys.path.insert(0, 'src')
+        
+        from restaurants.base import BaseRestaurant
+        from restaurants.kahvila_epila import KahvilaEpila
+        from restaurants.kontukeittio import KontukeittioNokia
+        from restaurants.nokian_kartano import NokianKartano
+        from telegram_bot import TelegramBot
+        from scraper import get_restaurants, scrape_all_menus
         print('✅ All imports successful')
         "
         
