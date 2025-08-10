@@ -34,7 +34,7 @@ def test_kontukeittio_nokia():
     
     # Test initialization
     assert restaurant.name == "Kontukeittiö Nokia"
-    assert "kontukoti.fi" in restaurant.url
+    assert "europe-west1-luncher-7cf76.cloudfunctions.net" in restaurant.url
     
     print(f"✅ Initialized: {restaurant.name}")
 
