@@ -90,10 +90,8 @@ jobs:
         
     - name: Validate workflow files with actionlint
       run: |
-        # Install actionlint for GitHub Actions workflow validation
-        curl -sSfL -o actionlint.tar.gz https://github.com/rhysd/actionlint/releases/latest/download/actionlint_1.6.26_linux_amd64.tar.gz
-        tar -xzf actionlint.tar.gz
-        chmod +x actionlint
+        # Install actionlint using the official download script
+        bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
         
         # Validate all workflow files
         ./actionlint -color
