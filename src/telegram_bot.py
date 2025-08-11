@@ -6,6 +6,7 @@ import os
 import logging
 import asyncio
 from typing import List
+from html import escape as html_escape
 from telegram import Bot, error
 
 
@@ -23,9 +24,13 @@ class TelegramBot:
         self.bot = Bot(token=self.bot_token)
 
     def format_combined_menu_message(self, menus: List[str]) -> str:
-        """Format all restaurant menus into a single, well-formatted message."""
+        """Format all restaurant menus into a single, well-formatted HTML message.
+
+        Uses Telegram parse_mode="HTML". All dynamic text is HTML-escaped to avoid
+        entity parsing errors.
+        """
         if not menus:
-            return "❌ No menus available today"
+            return html_escape("❌ No menus available today")
         
         # Get current date info for the header
         from datetime import datetime
@@ -39,15 +44,15 @@ class TelegramBot:
             target_day = day_names[weekday]
         
         # Create the header
-        message = f"🍽️ **Lounaslista - {target_day}**\n"
+        message = f"🍽️ <b>{html_escape('Lounaslista - ' + target_day)}</b>\n"
         message += f"📅 {current_date.strftime('%d.%m.%Y')}\n"
         message += "=" * 40 + "\n\n"
         
         # Add each restaurant's menu
         for i, menu in enumerate(menus):
             if menu.startswith("❌"):
-                # Error case - just add the error message
-                message += f"**{menu}**\n\n"
+                # Error case - add the error message emphasized
+                message += f"<b>{html_escape(menu)}</b>\n\n"
             else:
                 # Extract restaurant name and menu content
                 lines = menu.split('\n')
@@ -57,25 +62,27 @@ class TelegramBot:
                     if restaurant_line.startswith("🍽️"):
                         # Remove the emoji and format the restaurant name
                         restaurant_name = restaurant_line.replace("🍽️", "").strip()
-                        # Remove any existing markdown formatting from the restaurant name
+                        # Remove common markdown bold markers if present
+                        if restaurant_name.startswith("**") and restaurant_name.endswith("**"):
+                            restaurant_name = restaurant_name.strip("*")
                         restaurant_name = restaurant_name.replace("**", "").strip()
-                        message += f"🍽️ **{restaurant_name}**\n"
+                        message += f"🍽️ <b>{html_escape(restaurant_name)}</b>\n"
                         
                         # Add the menu content (skip the first line which is the restaurant name)
                         for line in lines[1:]:
                             if line.strip():  # Only add non-empty lines
-                                # Skip weekday lines (they start with 📅 and contain weekday names)
-                                if not line.strip().startswith("📅 **"):
-                                    message += f"{line}\n"
+                                # Skip weekday lines
+                                if not line.strip().startswith("📅"):
+                                    message += f"{html_escape(line)}\n"
                         
                         message += "\n"  # Add spacing between restaurants
                     else:
                         # Fallback if format is unexpected
-                        message += f"{menu}\n\n"
+                        message += f"{html_escape(menu)}\n\n"
         
         # Add footer
         message += "=" * 40 + "\n"
-        message += "🕐 Päivitetty automaattisesti"
+        message += html_escape("🕐 Päivitetty automaattisesti")
         
         return message
 
@@ -83,7 +90,7 @@ class TelegramBot:
         """Post a message to the configured Telegram channel."""
         try:
             await self.bot.send_message(
-                chat_id=self.channel_id, text=message, parse_mode="Markdown"
+                chat_id=self.channel_id, text=message, parse_mode="HTML"
             )
             logging.info("Successfully posted message to Telegram channel")
             return True
