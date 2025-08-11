@@ -4,7 +4,7 @@ lxml==6.0.0
 python-telegram-bot==20.7
 python-dotenv==1.0.0
 schedule==1.2.2
-pytz==2023.3
+pytz==2025.2
 
 # Development and testing dependencies
 pytest==8.4.1
