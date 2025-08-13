@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Kahvila Epilä lunch menu scraper.
 Website: https://www.kahvilaepila.com/lounaslista/
