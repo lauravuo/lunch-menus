@@ -14,6 +14,7 @@ sys.path.insert(0, 'src')
 from restaurants.kahvila_epila import KahvilaEpila
 from restaurants.kontukeittio import KontukeittioNokia
 from restaurants.nokian_kartano import NokianKartano
+from restaurants.pizza_buffa import PizzaBuffa
 
 
 def test_current_day_menu():
@@ -26,8 +27,8 @@ def test_current_day_menu():
     weekday = current_date.weekday()
     day_names = ["Maanantai", "Tiistai", "Keskiviikko", "Torstai", "Perjantai"]
     
-    print(f"📅 Current date: {current_date.strftime('%Y-%m-%d')}")
-    print(f"📅 Current weekday: {weekday} ({day_names[weekday] if weekday < 5 else 'Weekend'})")
+    print("📅 Current date: {}".format(current_date.strftime('%Y-%m-%d')))
+    print("📅 Current weekday: {} ({})".format(weekday, day_names[weekday] if weekday < 5 else 'Weekend'))
     
     if weekday >= 5:
         print("📅 Weekend detected - will show Monday's menu")
@@ -35,30 +36,31 @@ def test_current_day_menu():
     else:
         target_day = day_names[weekday]
     
-    print(f"🎯 Target day: {target_day}")
+    print("🎯 Target day: {}".format(target_day))
     print()
     
     # Test each restaurant
     restaurants = [
         KahvilaEpila(),
         KontukeittioNokia(),
-        NokianKartano()
+        NokianKartano(),
+        PizzaBuffa()
     ]
     
     for restaurant in restaurants:
-        print(f"🍽️  Testing {restaurant.name}:")
+        print("🍽️  Testing {}:".format(restaurant.name))
         try:
             # Test current day menu
             current_menu = restaurant.get_current_day_menu()
-            print(f"✅ Current day menu generated successfully")
-            print(f"📝 Menu preview: {current_menu[:200]}...")
+            print("✅ Current day menu generated successfully")
+            print("📝 Menu preview: {}...".format(current_menu[:200]))
             
             # Test full week menu (for comparison)
             full_menu = restaurant.get_formatted_menu()
-            print(f"📅 Full week menu also available")
+            print("📅 Full week menu also available")
             
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print("❌ Error: {}".format(e))
         
         print("-" * 30)
     

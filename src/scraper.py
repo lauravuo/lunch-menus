@@ -8,6 +8,7 @@ from typing import List
 from restaurants.kahvila_epila import KahvilaEpila
 from restaurants.kontukeittio import KontukeittioNokia
 from restaurants.nokian_kartano import NokianKartano
+from restaurants.pizza_buffa import PizzaBuffa
 
 # Import Telegram bot
 from telegram_bot import TelegramBot
@@ -24,7 +25,7 @@ def setup_logging():
 
 def get_restaurants():
     """Get list of restaurant scrapers."""
-    return [KahvilaEpila(), KontukeittioNokia(), NokianKartano()]
+    return [KahvilaEpila(), KontukeittioNokia(), NokianKartano(), PizzaBuffa()]
 
 
 def scrape_all_menus(restaurants) -> List[str]:
