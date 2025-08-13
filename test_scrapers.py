@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 from restaurants.kahvila_epila import KahvilaEpila
 from restaurants.kontukeittio import KontukeittioNokia
 from restaurants.nokian_kartano import NokianKartano
+from restaurants.pizza_buffa import PizzaBuffa
 
 
 def test_kahvila_epila():
@@ -50,6 +51,25 @@ def test_nokian_kartano():
     print(f"✅ Initialized: {restaurant.name}")
 
 
+def test_pizza_buffa():
+    """Test Pizza Buffa scraper."""
+    restaurant = PizzaBuffa()
+    
+    # Test initialization
+    assert restaurant.name == "Pizza Buffa ABC Kolmenkulma"
+    assert "raflaamo.fi" in restaurant.url
+    
+    print(f"✅ Initialized: {restaurant.name}")
+    
+    # Test menu scraping
+    menu = restaurant.scrape_menu()
+    print(f"📋 Found menu for {len(menu)} days")
+    
+    # Test current day menu formatting
+    current_menu = restaurant.get_current_day_menu()
+    print(f"📅 Current day menu: {len(current_menu)} characters")
+
+
 def test_base_functionality():
     """Test base restaurant functionality."""
     from restaurants.base import BaseRestaurant
@@ -71,6 +91,7 @@ if __name__ == "__main__":
     test_kahvila_epila()
     test_kontukeittio_nokia()
     test_nokian_kartano()
+    test_pizza_buffa()
     test_base_functionality()
     
     print("\n🎉 All tests passed!")
