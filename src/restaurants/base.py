@@ -9,7 +9,6 @@ import requests
 from bs4 import BeautifulSoup
 import logging
 from datetime import datetime
-import locale
 
 
 class BaseRestaurant(ABC):
@@ -49,7 +48,7 @@ class BaseRestaurant(ABC):
         # Get current day name in Finnish
         current_date = datetime.now()
         weekday = current_date.weekday()  # 0=Monday, 6=Sunday
-        
+
         # If it's weekend (Saturday=5, Sunday=6), use Monday
         if weekday >= 5:  # Saturday or Sunday
             target_day = "Maanantai"
