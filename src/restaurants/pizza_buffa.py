@@ -12,8 +12,12 @@ class PizzaBuffa(BaseRestaurant):
     def __init__(self):
         super().__init__(
             name="Pizza Buffa ABC Kolmenkulma",
-            url="https://www.raflaamo.fi/fi/tampere/"
-            "pizza-buffa-abc-kolmenkulma/menu/lunch",
+            # Use the base restaurant page; specific menu paths may change on raflaamo
+            # Canonical Raflaamo lunch page for this restaurant (user-provided)
+            url=(
+                "https://www.raflaamo.fi/fi/ravintola/nokia/"
+                "pizza-buffa-abc-kolmenkulma-nokia/menu/lounas"
+            ),
         )
 
     def _extract_dishes(self, text: str) -> List[str]:
@@ -128,8 +132,29 @@ class PizzaBuffa(BaseRestaurant):
 
     def scrape_menu(self) -> Dict[str, List[str]]:
         """Scrape the lunch menu from Pizza Buffa Raflaamo website."""
-        soup = self.get_page_content()
+        # Raflaamo occasionally changes paths; try several candidate endpoints.
+        from .base import logging
+        candidates = [
+            self.url,
+            f"{self.url}/menu",
+            f"{self.url}/menu/lunch",
+            f"{self.url}/menu/lounas",
+        ]
+
+        soup = None
+        for candidate in candidates:
+            try:
+                resp = self.session.get(candidate, timeout=10)
+                resp.raise_for_status()
+                soup = __import__("bs4").BeautifulSoup(resp.content, "html.parser")
+                logging.info(f"Fetched {candidate} for {self.name}")
+                break
+            except Exception as e:
+                logging.debug(f"Candidate {candidate} failed for {self.name}: {e}")
+
         if not soup:
+            # Not all restaurants remain on raflaamo — treat missing page as informational
+            logging.info(f"No menu page found for {self.name} on raflaamo (all candidates failed)")
             return {}
 
         try:
@@ -142,15 +167,9 @@ class PizzaBuffa(BaseRestaurant):
                 if dishes:
                     menu[day] = dishes
 
-            from .base import logging
-
-            logging.info(
-                f"Successfully extracted menu for {len(menu)} days from {self.name}"
-            )
+            logging.info(f"Successfully extracted menu for {len(menu)} days from {self.name}")
             return menu
 
         except Exception as e:
-            from .base import logging
-
             logging.error(f"Error parsing {self.name} menu: {e}")
             return {}

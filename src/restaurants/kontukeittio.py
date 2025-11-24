@@ -12,8 +12,8 @@ class KontukeittioNokia(BaseRestaurant):
     def __init__(self):
         super().__init__(
             name="Kontukeittiö Nokia",
-            url="https://europe-west1-luncher-7cf76.cloudfunctions.net/api/v1/week/"
-            "1baa89be-11dc-4447-abb3-bbaef16cc6d1/active?language=fi",
+            url=("https://europe-west1-luncher-7cf76.cloudfunctions.net/api/"
+                 "v1/week/1baa89be-11dc-4447-abb3-bbaef16cc6d1/active?language=fi"),
         )
 
     def get_page_content(self):
@@ -40,7 +40,36 @@ class KontukeittioNokia(BaseRestaurant):
         """Format allergens list into a string."""
         if not allergens:
             return ""
-        return " (" + ", ".join(a.get("abbreviation", {}).get("fi", "") for a in allergens) + ")"
+        return (" (" + ", ".join(
+            a.get("abbreviation", {}).get("fi", "") for a in allergens
+        ) + ")")
+
+    def _is_boilerplate(self, text: str) -> bool:
+        """Detect common boilerplate/empty descriptions that should be ignored."""
+        if not text:
+            return True
+
+        cleaned = text.strip().lower()
+        # Common boilerplate phrases seen in menus
+        boilerplate_phrases = [
+            "salaattipöytä",
+            "salaattibuffet",
+            "salaattipöydän",
+            "salaattipöytä ja leipäpöytä",
+            "salaattipöytä ja kahvi",
+            "salaattipoyta",
+            "salad",
+            "buffet",
+            "lisukkeet",
+            "suolainen",
+            "makea",
+        ]
+
+        for phrase in boilerplate_phrases:
+            if cleaned == phrase or cleaned.startswith(phrase + " "):
+                return True
+
+        return False
 
     def _extract_menu_items(self, day: dict) -> List[str]:
         """Extract menu items from a day's data."""
@@ -49,20 +78,30 @@ class KontukeittioNokia(BaseRestaurant):
             title = lunch.get("title", {}).get("fi", "").strip()
             if not title:
                 continue
-                
-            # Format allergens
+
+            # Skip items that are purely boilerplate (e.g. "Salaattipöytä")
+            description = lunch.get("description", {}).get("fi", "")
+            if self._is_boilerplate(title) and self._is_boilerplate(description):
+                continue
+
             allergens = self._format_allergens(lunch.get("allergens", []))
-            
-            # Format price if available
             price = ""
             if "normalPrice" in lunch and "price" in lunch["normalPrice"]:
                 price = f" {lunch['normalPrice']['price']}€"
-                
-            # Combine title, allergens, and price
-            menu_item = f"{title}{allergens}{price}"
-            if menu_item:
+
+            # Clean title from trailing boilerplate fragments (e.g. " - Salaattipöytä")
+            cleaned_title = title
+            for phrase in ["-", "—", ":"]:
+                if phrase in cleaned_title:
+                    parts = [p.strip() for p in cleaned_title.split(phrase)]
+                    # keep leading part if trailing fragment is boilerplate
+                    if len(parts) > 1 and self._is_boilerplate(parts[-1]):
+                        cleaned_title = " ".join(parts[:-1]).strip()
+
+            menu_item = f"{cleaned_title}{allergens}{price}"
+            if menu_item and not menu_item.isspace():
                 menu_items.append(menu_item)
-                
+
         return menu_items
 
     def scrape_menu(self) -> Dict[str, List[str]]:
@@ -80,16 +119,14 @@ class KontukeittioNokia(BaseRestaurant):
 
             week_data = json_data.get("data", {}).get("week", {})
             days = week_data.get("days", [])
-            
+
             menu = {}
             for day in days:
                 if not self._is_valid_day(day):
                     continue
-                    
                 day_name = self._get_day_name(day)
                 if not day_name or day_name in ["Lauantai", "Sunnuntai"]:
                     continue
-                    
                 menu_items = self._extract_menu_items(day)
                 if menu_items:
                     menu[day_name] = menu_items
