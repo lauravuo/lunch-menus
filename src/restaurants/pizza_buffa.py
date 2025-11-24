@@ -134,6 +134,7 @@ class PizzaBuffa(BaseRestaurant):
         """Scrape the lunch menu from Pizza Buffa Raflaamo website."""
         # Raflaamo occasionally changes paths; try several candidate endpoints.
         from .base import logging
+
         candidates = [
             self.url,
             f"{self.url}/menu",
@@ -153,8 +154,8 @@ class PizzaBuffa(BaseRestaurant):
                 logging.debug(f"Candidate {candidate} failed for {self.name}: {e}")
 
         if not soup:
-            # Not all restaurants remain on raflaamo — treat missing page as informational
-            logging.info(f"No menu page found for {self.name} on raflaamo (all candidates failed)")
+            # Raflaamo may not host this restaurant anymore; return empty menu
+            logging.info(f"No menu page found for {self.name} on raflaamo")
             return {}
 
         try:
@@ -167,7 +168,9 @@ class PizzaBuffa(BaseRestaurant):
                 if dishes:
                     menu[day] = dishes
 
-            logging.info(f"Successfully extracted menu for {len(menu)} days from {self.name}")
+            logging.info(
+                f"Successfully extracted menu for {len(menu)} days from {self.name}"
+            )
             return menu
 
         except Exception as e:

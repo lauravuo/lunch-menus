@@ -12,8 +12,10 @@ class KontukeittioNokia(BaseRestaurant):
     def __init__(self):
         super().__init__(
             name="Kontukeittiö Nokia",
-            url=("https://europe-west1-luncher-7cf76.cloudfunctions.net/api/"
-                 "v1/week/1baa89be-11dc-4447-abb3-bbaef16cc6d1/active?language=fi"),
+            url=(
+                "https://europe-west1-luncher-7cf76.cloudfunctions.net/api/"
+                "v1/week/1baa89be-11dc-4447-abb3-bbaef16cc6d1/active?language=fi"
+            ),
         )
 
     def get_page_content(self):
@@ -40,9 +42,11 @@ class KontukeittioNokia(BaseRestaurant):
         """Format allergens list into a string."""
         if not allergens:
             return ""
-        return (" (" + ", ".join(
-            a.get("abbreviation", {}).get("fi", "") for a in allergens
-        ) + ")")
+        return (
+            " ("
+            + ", ".join(a.get("abbreviation", {}).get("fi", "") for a in allergens)
+            + ")"
+        )
 
     def _is_boilerplate(self, text: str) -> bool:
         """Detect common boilerplate/empty descriptions that should be ignored."""
@@ -114,6 +118,7 @@ class KontukeittioNokia(BaseRestaurant):
             # Check JSON structure
             if not isinstance(json_data, dict) or not json_data.get("success"):
                 from .base import logging
+
                 logging.warning(f"Unexpected JSON structure from {self.name}")
                 return {}
 
@@ -135,5 +140,6 @@ class KontukeittioNokia(BaseRestaurant):
 
         except Exception as e:
             from .base import logging
+
             logging.error(f"Error parsing {self.name} menu: {e}")
             return {}
