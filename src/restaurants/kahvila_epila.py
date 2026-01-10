@@ -102,7 +102,8 @@ class KahvilaEpila(BaseRestaurant):
             (r"keskiviikko[:\s]*(.*?)(?=torstai|perjantai|$)", "Keskiviikko"),
             (r"torstai[:\s]*(.*?)(?=perjantai|$)", "Torstai"),
             (
-                r"perjantai[:\s]*(.*?)(?=Lounas\s+\d|Lounas\s+myös\s+mukaan|Kahvila\s+Epilä|Aukioloajat|Yhteystiedot|$)",
+                r"perjantai[:\s]*(.*?)(?=Lounas\s+\d|Lounas\s+myös\s+mukaan|"
+                r"Kahvila\s+Epilä|Aukioloajat|Yhteystiedot|$)",
                 "Perjantai",
             ),
         ]
