@@ -31,6 +31,10 @@ echo "🧪 Testing Kahvila Epilä parsing..."
 uv run pytest tests/test_kahvila_epila_parsing.py -v
 
 echo "----------------------------------------------------------------------"
+echo "🧪 Testing Ståhlberg Lielahti parsing..."
+uv run pytest tests/test_stahlberg_lielahti_parsing.py -v
+
+echo "----------------------------------------------------------------------"
 echo "🔌 Testing scraper imports..."
 uv run python -c "
 import sys
@@ -40,6 +44,7 @@ from restaurants.base import BaseRestaurant
 from restaurants.kahvila_epila import KahvilaEpila
 from restaurants.kontukeittio import KontukeittioNokia
 from restaurants.nokian_kartano import NokianKartano
+from restaurants.stahlberg_lielahti import StahlbergLielahti
 from telegram_bot import TelegramBot
 from scraper import get_restaurants, scrape_all_menus
 print('✅ All imports successful')
@@ -56,13 +61,15 @@ sys.path.insert(0, 'src')
 from restaurants.kahvila_epila import KahvilaEpila
 from restaurants.kontukeittio import KontukeittioNokia
 from restaurants.nokian_kartano import NokianKartano
+from restaurants.stahlberg_lielahti import StahlbergLielahti
 
 # Test initialization
 epila = KahvilaEpila()
 kontu = KontukeittioNokia()
 kartano = NokianKartano()
+stahlberg = StahlbergLielahti()
 
-print(f'✅ Initialized: {epila.name}, {kontu.name}, {kartano.name}')
+print(f'✅ Initialized: {epila.name}, {kontu.name}, {kartano.name}, {stahlberg.name}')
 print('✅ All scrapers initialized successfully')
 "
 
