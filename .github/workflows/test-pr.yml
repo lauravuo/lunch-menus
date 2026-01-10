@@ -33,15 +33,15 @@ jobs:
         
     - name: Test with pytest
       run: |
-        uv run pytest test_scrapers.py -v
+        uv run pytest tests/test_scrapers.py -v
         
     - name: Test current day menu functionality
       run: |
-        uv run test_current_day.py
+        uv run tests/test_current_day.py
         
     - name: Test Telegram bot functionality
       run: |
-        uv run pytest test_telegram_bot.py -v
+        uv run pytest tests/test_telegram_bot.py -v
         
     - name: Test scraper imports
       run: |
