@@ -62,17 +62,17 @@ The scraper runs automatically via GitHub Actions every weekday at 7:30 AM UTC (
  
  ```bash
  # Run the test suite
- uv run test_scrapers.py
+ uv run tests/test_scrapers.py
  
  # Test current day menu functionality
- uv run test_current_day.py
+ uv run tests/test_current_day.py
  
  # Test Telegram bot functionality (including message splitting)
- uv run test_telegram_bot.py
+ uv run tests/test_telegram_bot.py
  
  # Run with pytest (recommended)
- uv run pytest test_scrapers.py -v
- uv run pytest test_telegram_bot.py -v
+ uv run pytest tests/test_scrapers.py -v
+ uv run pytest tests/test_telegram_bot.py -v
  
  # Run all tests
  uv run pytest -v
@@ -102,11 +102,13 @@ The scraper runs automatically via GitHub Actions every weekday at 7:30 AM UTC (
 │   │   ├── kontukeittio.py      # Kontukeittiö Nokia scraper
 │   │   └── nokian_kartano.py    # Nokian Kartano scraper
 │   └── telegram_bot.py          # Telegram posting logic
+├── tests/
+│   ├── test_scrapers.py         # Restaurant scraper tests
+│   ├── test_current_day.py      # Current day menu functionality test
+│   ├── test_telegram_bot.py     # Telegram bot functionality tests
+│   └── test_kahvila_epila_parsing.py # Unit tests for Kahvila Epilä
 ├── pyproject.toml               # Project configuration and dependencies
 ├── uv.lock                      # Lock file for dependencies
-├── test_scrapers.py             # Restaurant scraper tests
-├── test_current_day.py          # Current day menu functionality test
-├── test_telegram_bot.py         # Telegram bot functionality tests
 ├── .gitignore                   # Git ignore file
 └── README.md                    # This file
 ```

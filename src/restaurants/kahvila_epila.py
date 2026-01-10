@@ -101,7 +101,11 @@ class KahvilaEpila(BaseRestaurant):
             (r"tiistai[:\s]*(.*?)(?=keskiviikko|torstai|perjantai|$)", "Tiistai"),
             (r"keskiviikko[:\s]*(.*?)(?=torstai|perjantai|$)", "Keskiviikko"),
             (r"torstai[:\s]*(.*?)(?=perjantai|$)", "Torstai"),
-            (r"perjantai[:\s]*(.*?)$", "Perjantai"),
+            (
+                r"perjantai[:\s]*(.*?)(?=Lounas\s+\d|Lounas\s+myös\s+mukaan|"
+                r"Kahvila\s+Epilä|Aukioloajat|Yhteystiedot|$)",
+                "Perjantai",
+            ),
         ]
 
         for pattern, day_name in day_patterns:
