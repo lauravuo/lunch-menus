@@ -14,6 +14,7 @@ from restaurants.kahvila_epila import KahvilaEpila
 from restaurants.kontukeittio import KontukeittioNokia
 from restaurants.nokian_kartano import NokianKartano
 from restaurants.pizza_buffa import PizzaBuffa
+from restaurants.stahlberg_lielahti import StahlbergLielahti
 
 
 def test_kahvila_epila():
@@ -70,6 +71,18 @@ def test_pizza_buffa():
     print(f"📅 Current day menu: {len(current_menu)} characters")
 
 
+def test_stahlberg_lielahti():
+    """Test Ståhlberg Lielahti scraper."""
+    restaurant = StahlbergLielahti()
+
+    # Test initialization
+    assert restaurant.name == "Ståhlberg Lielahti"
+    assert "stahlbergkahvilat.fi" in restaurant.url
+
+    print(f"✅ Initialized: {restaurant.name}")
+    print(f"{restaurant.get_formatted_menu()}")
+
+
 def test_base_functionality():
     """Test base restaurant functionality."""
     from restaurants.base import BaseRestaurant
@@ -92,6 +105,7 @@ if __name__ == "__main__":
     test_kontukeittio_nokia()
     test_nokian_kartano()
     test_pizza_buffa()
+    test_stahlberg_lielahti()
     test_base_functionality()
     
     print("\n🎉 All tests passed!")

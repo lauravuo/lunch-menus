@@ -15,6 +15,7 @@ from restaurants.kahvila_epila import KahvilaEpila
 from restaurants.kontukeittio import KontukeittioNokia
 from restaurants.nokian_kartano import NokianKartano
 from restaurants.pizza_buffa import PizzaBuffa
+from restaurants.stahlberg_lielahti import StahlbergLielahti
 
 
 def test_current_day_menu():
@@ -44,7 +45,8 @@ def test_current_day_menu():
         KahvilaEpila(),
         KontukeittioNokia(),
         NokianKartano(),
-        PizzaBuffa()
+        PizzaBuffa(),
+        StahlbergLielahti(),
     ]
     
     for restaurant in restaurants:
