@@ -1,0 +1,22 @@
+[project]
+name = "lunch-menus"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "lxml>=6.0.2",
+    "python-dotenv>=1.2.1",
+    "python-telegram-bot>=22.5",
+    "pytz>=2025.2",
+    "requests>=2.32.5",
+    "schedule>=1.2.2",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.11.0",
+    "flake8>=7.3.0",
+    "pytest>=8.4.2",
+]
