@@ -41,50 +41,50 @@ Automated lunch menu scraper that fetches daily menus from selected restaurants 
      - `TELEGRAM_CHANNEL_ID`: Your target channel ID
 
 ### Installation
-
-```bash
-pip install -r requirements.txt
-```
-
-## Usage
-
-### Manual Run
-
-```bash
-python src/scraper.py
-```
+ 
+ ```bash
+ uv sync
+ ```
+ 
+ ## Usage
+ 
+ ### Manual Run
+ 
+ ```bash
+ uv run src/scraper.py
+ ```
 
 ### Automated Run
 
 The scraper runs automatically via GitHub Actions every weekday at 7:30 AM UTC (10:30 AM Finnish time).
 
 ### Testing
-
-```bash
-# Run the test suite
-python test_scrapers.py
-
-# Test current day menu functionality
-python test_current_day.py
-
-# Test Telegram bot functionality (including message splitting)
-python test_telegram_bot.py
-
-# Run with pytest (recommended)
-pytest test_scrapers.py -v
-pytest test_telegram_bot.py -v
-
-# Run all tests
-pytest -v
-
-# Check code quality
-flake8 src/
-black --check src/
-
-# Validate GitHub Actions workflows (optional)
-curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download.sh | sh -s -- -b .
-./actionlint -color
-```
+ 
+ ```bash
+ # Run the test suite
+ uv run test_scrapers.py
+ 
+ # Test current day menu functionality
+ uv run test_current_day.py
+ 
+ # Test Telegram bot functionality (including message splitting)
+ uv run test_telegram_bot.py
+ 
+ # Run with pytest (recommended)
+ uv run pytest test_scrapers.py -v
+ uv run pytest test_telegram_bot.py -v
+ 
+ # Run all tests
+ uv run pytest -v
+ 
+ # Check code quality
+ uv run flake8 src/
+ uv run black --check src/
+ 
+ # Validate GitHub Actions workflows (optional)
+ curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download.sh | sh -s -- -b .
+ ./actionlint -color
+ ```
 
 ## Project Structure
 
@@ -102,7 +102,8 @@ curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/downl
 │   │   ├── kontukeittio.py      # Kontukeittiö Nokia scraper
 │   │   └── nokian_kartano.py    # Nokian Kartano scraper
 │   └── telegram_bot.py          # Telegram posting logic
-├── requirements.txt              # Python dependencies
+├── pyproject.toml               # Project configuration and dependencies
+├── uv.lock                      # Lock file for dependencies
 ├── test_scrapers.py             # Restaurant scraper tests
 ├── test_current_day.py          # Current day menu functionality test
 ├── test_telegram_bot.py         # Telegram bot functionality tests

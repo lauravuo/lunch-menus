@@ -73,17 +73,17 @@ This guide will help you deploy the Lunch Menu Scraper to GitHub and set up auto
 1. **Test Locally (Optional):**
    ```bash
    # Install dependencies
-   pip install -r requirements.txt
+   uv sync
    
    # Set environment variables
    export TELEGRAM_BOT_TOKEN="your_bot_token"
    export TELEGRAM_CHANNEL_ID="your_channel_id"
    
    # Test scrapers
-   python test_scrapers.py
+   uv run test_scrapers.py
    
    # Test main scraper
-   python src/scraper.py
+   uv run src/scraper.py
    ```
 
 2. **Test GitHub Actions:**

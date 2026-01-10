@@ -14,40 +14,38 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+
     - name: Set up Python
-      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
-      with:
-        python-version: '3.11'
-        
+      run: uv python install 3.11
+
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        
+        uv sync --frozen
+
     - name: Lint with flake8
       run: |
-        pip install flake8
         # Stop the build if there are Python syntax errors or undefined names
-        flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        uv run flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
         # Check all linting rules and fail on violations
-        flake8 src/ --count --max-complexity=10 --max-line-length=88 --extend-ignore=E203,W503 --statistics
+        uv run flake8 src/ --count --max-complexity=10 --max-line-length=88 --extend-ignore=E203,W503 --statistics
         
     - name: Test with pytest
       run: |
-        pip install pytest
-        pytest test_scrapers.py -v
+        uv run pytest test_scrapers.py -v
         
     - name: Test current day menu functionality
       run: |
-        python test_current_day.py
+        uv run test_current_day.py
         
     - name: Test Telegram bot functionality
       run: |
-        pytest test_telegram_bot.py -v
+        uv run pytest test_telegram_bot.py -v
         
     - name: Test scraper imports
       run: |
-        python -c "
+        uv run python -c "
         import sys
         sys.path.insert(0, 'src')
         
@@ -66,7 +64,7 @@ jobs:
         TELEGRAM_CHANNEL_ID: "test_channel"
       run: |
         # Test that scrapers can be initialized and run without errors
-        python -c "
+        uv run python -c "
         import sys
         sys.path.insert(0, 'src')
         
@@ -88,9 +86,8 @@ jobs:
         
     - name: Check code formatting
       run: |
-        pip install black
         # Check if code is properly formatted - fail if not formatted correctly
-        black --check src/
+        uv run black --check src/
         
     - name: Validate workflow files with actionlint
       run: |
