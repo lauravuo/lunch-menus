@@ -7,11 +7,11 @@ from bs4 import BeautifulSoup
 # Add src to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from restaurants.stahlberg_lielahti import StahlbergLielahti
+from restaurants.stahlberg_kolmenkulma import StahlbergKolmenkulma
 
-class TestStahlbergLielahtiParsing(unittest.TestCase):
+class TestStahlbergKolmenkulmaParsing(unittest.TestCase):
     def setUp(self):
-        self.scraper = StahlbergLielahti()
+        self.scraper = StahlbergKolmenkulma()
 
     def test_menu_parsing(self):
         """Test that the scraper correctly parses the HTML table structure."""

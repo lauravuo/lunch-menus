@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-Ståhlberg Lielahti lunch menu scraper.
-Website: https://stahlbergkahvilat.fi/stahlberg-lielahti/
+Ståhlberg Kolmenkulma lunch menu scraper.
+Website: https://stahlbergkahvilat.fi/lounasravintolat/kolmenkulma/
 """
 
 from typing import Dict, List, Optional
 from .base import BaseRestaurant
 
 
-class StahlbergLielahti(BaseRestaurant):
+class StahlbergKolmenkulma(BaseRestaurant):
     def __init__(self):
         super().__init__(
-            name="Ståhlberg Lielahti",
-            url="https://stahlbergkahvilat.fi/stahlberg-lielahti/",
+            name="Ståhlberg Kolmenkulma",
+            url="https://stahlbergkahvilat.fi/lounasravintolat/kolmenkulma/",
         )
 
     def scrape_menu(self) -> Dict[str, List[str]]:
-        """Scrape the lunch menu from Ståhlberg Lielahti."""
+        """Scrape the lunch menu from Ståhlberg Kolmenkulma."""
         soup = self.get_page_content()
         if not soup:
             return {}
