@@ -51,6 +51,16 @@ def test_nokian_kartano():
     
     print(f"✅ Initialized: {restaurant.name}")
 
+    # Test menu scraping
+    menu = restaurant.scrape_menu()
+    print(f"📋 Found menu for {len(menu)} days")
+    assert len(menu) > 0, "Menu should not be empty"
+    
+    # Test current day menu formatting
+    current_menu = restaurant.get_current_day_menu()
+    print(f"📅 Current day menu: {len(current_menu)} characters")
+    assert "Unable to fetch menu" not in current_menu, "Should successfully format current day menu"
+
 
 def test_pizza_buffa():
     """Test Pizza Buffa scraper."""

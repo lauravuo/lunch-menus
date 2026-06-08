@@ -1,7 +1,4 @@
-"""
-Nokian Kartano (FoodCo) restaurant scraper using JSON API.
-"""
-
+import re
 from typing import Dict, List
 from .base import BaseRestaurant
 
@@ -50,11 +47,16 @@ class NokianKartano(BaseRestaurant):
         menu_items = []
         for set_menu in day["SetMenus"]:
             menu_name = set_menu.get("Name")
-            if menu_name and menu_name.strip() == "Buffet lounas":
-                components = set_menu.get("Components", [])
-                for component in components:
-                    if component and component.strip():
-                        menu_items.append(component)
+            if menu_name:
+                cleaned_name = menu_name.strip().replace(" ", "").lower()
+                if cleaned_name in ("buffetlounas", "lounas", "buffet"):
+                    components = set_menu.get("Components", [])
+                    for component in components:
+                        if component:
+                            # Normalize internal whitespaces/newlines
+                            cleaned_comp = re.sub(r"\s+", " ", component).strip()
+                            if cleaned_comp:
+                                menu_items.append(cleaned_comp)
         return menu_items
 
     def _process_day(self, day: dict, day_mapping: Dict[int, str]) -> tuple:
