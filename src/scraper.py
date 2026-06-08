@@ -9,7 +9,7 @@ from restaurants.kahvila_epila import KahvilaEpila
 from restaurants.kontukeittio import KontukeittioNokia
 from restaurants.nokian_kartano import NokianKartano
 from restaurants.pizza_buffa import PizzaBuffa
-from restaurants.stahlberg_lielahti import StahlbergLielahti
+from restaurants.stahlberg_kolmenkulma import StahlbergKolmenkulma
 
 # Import Telegram bot
 from telegram_bot import TelegramBot
@@ -31,7 +31,7 @@ def get_restaurants():
         KontukeittioNokia(),
         NokianKartano(),
         PizzaBuffa(),
-        StahlbergLielahti(),
+        StahlbergKolmenkulma(),
     ]
 
 
